@@ -1,0 +1,68 @@
+// Function to initialize seats based on local storage
+function initializeSeats() {
+    const storedSeats = JSON.parse(localStorage.getItem('bookedSeats')) || [];
+    storedSeats.forEach(seat => {
+        const seatElement = Array.from(document.querySelectorAll('.seat')).find(s => s.textContent === seat);
+        if (seatElement) {
+            seatElement.classList.add('occupied');
+        }
+    });
+}
+
+// Save booked seats to local storage
+function saveBookedSeats() {
+    const bookedSeats = Array.from(document.querySelectorAll('.seat.occupied')).map(seat => seat.textContent);
+    localStorage.setItem('bookedSeats', JSON.stringify(bookedSeats));
+}
+
+// Modified savePassengerInfo to include local storage updates
+function savePassengerInfo() {
+    if (selectedSeats.length > 0) {
+        const name = nameInput.value;
+        const address = addressInput.value;
+        const phone = phoneInput.value;
+        const email = emailInput.value;
+
+        if (name && address && phone && email) {
+            alert(`Seats: ${selectedSeats.join(', ')}\nName: ${name}\nAddress: ${address}\nPhone: ${phone}\nEmail: ${email}`);
+
+            selectedSeats.forEach(seat => {
+                const seatElement = Array.from(document.querySelectorAll('.seat')).find(s => s.textContent === seat);
+                if (seatElement) {
+                    seatElement.classList.add('occupied');
+                }
+            });
+
+            saveBookedSeats(); // Save to local storage
+
+            passengerForm.style.display = 'none';
+            nameInput.value = '';
+            addressInput.value = '';
+            phoneInput.value = '';
+            emailInput.value = '';
+
+            sendEmail(name, address, phone, email, selectedSeats);
+
+            selectedSeats = [];
+            selectedSeatsText.textContent = '0';
+        } else {
+            alert('Please fill out all fields.');
+        }
+    }
+}
+
+// Modified unblock functionality to include local storage updates
+seatContainer.addEventListener('contextmenu', (event) => {
+    event.preventDefault();
+    const seat = event.target;
+    if (seat.classList.contains('occupied')) {
+        const confirmUnblock = confirm(`Do you want to unblock seat ${seat.textContent}?`);
+        if (confirmUnblock) {
+            seat.classList.remove('occupied');
+            saveBookedSeats(); // Update local storage
+        }
+    }
+});
+
+// Initialize seats on page load
+initializeSeats();
